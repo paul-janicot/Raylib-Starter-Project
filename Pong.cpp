@@ -58,9 +58,9 @@ int main() {
     bool pause = false;
 
     Font ft = LoadFont("resources/fonts/alagard.png");
-    Image img = LoadImage("resources/images/background.png");
+    Image img = LoadImage("resources/images/noir.png");
     Texture2D texture = LoadTextureFromImage(img);      // Image converted to texture, uploaded to GPU memory (VRAM)
-    UnloadImage(img);   // Once image has been converted to texture and uploaded to VRAM, it can be unloaded from RAM
+    //UnloadImage(img);   // Once image has been converted to texture and uploaded to VRAM, it can be unloaded from RAM
 
 
     while (!WindowShouldClose()) {
