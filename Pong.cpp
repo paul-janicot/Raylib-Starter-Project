@@ -3,26 +3,30 @@
 
 using namespace std;
 
+
+
 int main() {
 //-----Const---------------
     const int x = 800;
-    const int y = 500;
+    const int y = 500;        
     
     const int margeY = 50;
 
     const float radius = 20;
 
-    const int sizeOfPadel = 100;
+    int sizeOfPadel = 100;
     const int widthOfPadel = 10;
 
     const int padelSpeed = 10;
 
-    
+    const int baseSpeed = 8;
 
     const Vector2 scorePosition1{ x *0.30, y / 10 };
     const Vector2 scorePosition2{ x*0.70, y / 10 };
+
     
-//--------Variables------------------
+    
+//--------Variables-----------
     int padelPositionX1 = 50;
     int padelPositionY1 = 50;
 
@@ -42,6 +46,10 @@ int main() {
     int score1 = 0;
     int score2 = 0;
 
+    bool ballCollided = false;
+
+    bool isWin = false;
+
 //----------------------------
 
 
@@ -57,14 +65,20 @@ int main() {
     PlayMusicStream(lvlMusic);
     bool pause = false;
 
-    Font ft = LoadFont("resources/fonts/alagard.png");
+    Font ft = LoadFont("resources/fonts/setback.png");
     Image img = LoadImage("resources/images/noir.png");
     Texture2D texture = LoadTextureFromImage(img);      // Image converted to texture, uploaded to GPU memory (VRAM)
     //UnloadImage(img);   // Once image has been converted to texture and uploaded to VRAM, it can be unloaded from RAM
 
+    
 
     while (!WindowShouldClose()) {
         //Update
+        if (IsKeyPressed(KEY_ENTER) && isWin) {
+            score1 = 0;
+            score2 = 0;
+            isWin = false;
+        }
 
         if (IsKeyDown('W') &&(padelPositionY1 >= margeY)){
             padelPositionY1 -= padelSpeed;
@@ -100,26 +114,41 @@ int main() {
         }
 
         // Collision avec la raquette gauche (padel 1)
-        if ((ballX - radius <= padelPositionX1 + widthOfPadel) &&
-            (ballY >= padelPositionY1 && ballY <= padelPositionY1 + sizeOfPadel)) {
-            movementX *= -1;
+        if (!ballCollided &&((ballX - radius <= padelPositionX1 + widthOfPadel) &&
+            (ballY >= padelPositionY1 && ballY <= padelPositionY1 + sizeOfPadel))) {
+            movementX *= -1.2;
+            ballCollided = true;
+            
+            
         }
 
         // Collision avec la raquette droite (padel 2)
-        if ((ballX + radius >= padelPositionX2) &&  // Vérifie si la balle touche le bord gauche de la raquette 2
-            (ballY >= padelPositionY2 && ballY <= padelPositionY2 + sizeOfPadel)) {
-            movementX *= -1;
+        if (!ballCollided &&((ballX + radius >= padelPositionX2) &&  // Vérifie si la balle touche le bord gauche de la raquette 2
+            (ballY >= padelPositionY2 && ballY <= padelPositionY2 + sizeOfPadel))) {
+            movementX *= -1.2;
+            ballCollided = true;
+
         }
 
-        if (ballX <= 0) {
+        // Reset the collision flag when the ball moves away from the paddles
+        if (ballX > padelPositionX1 + widthOfPadel + radius && ballX < padelPositionX2 - radius) {
+            ballCollided = false;
+        }
+
+
+        if (ballX <= 0 && !isWin)  {
             score2 += 1;
             ballX = x * 0.75;
+            movementX = -baseSpeed;
         }
-        if (ballX >= x) {
+        if (ballX >= x && !isWin) {
             score1 += 1;
             ballX = x / 4;
+            movementX = baseSpeed;
+            
         }
 
+        
        
         
 
@@ -132,10 +161,26 @@ int main() {
         DrawTexture(texture, 0, 0, WHITE);
         DrawRectangle(padelPositionX1, padelPositionY1, widthOfPadel, sizeOfPadel, WHITE);
         DrawRectangle(padelPositionX2, padelPositionY2, widthOfPadel, sizeOfPadel, WHITE);
+
+        if (!isWin) {
         DrawCircle(ballX, ballY, radius, WHITE);
+        }
+
         DrawTextEx(ft, TextFormat("%i", score1), scorePosition1, 40, 5, WHITE);
         DrawTextEx(ft, TextFormat("%i", score2), scorePosition2, 40, 5, WHITE);
         DrawLine(x / 2, 0, x / 2, y, WHITE);
+
+        if (score1 >= 10) {
+            isWin = true;
+            DrawTextEx(ft, "Paddle 1 Win !", { x *0.3,y / 2 }, 40, 5, WHITE);
+            DrawTextEx(ft, "Press Enter to restart", { x *0.15,y*0.6 }, 40, 5, WHITE);
+        }if (score2 >= 10) {
+            isWin = true;
+            DrawTextEx(ft, "Paddle 2 Win !", { x *0.3,y / 2 }, 40, 5, WHITE);
+            DrawTextEx(ft, "Press Enter to restart", { x * 0.15,y * 0.6 }, 40, 5, WHITE);
+        }
+        
+
 
        
 
@@ -146,3 +191,4 @@ int main() {
     CloseWindow();
     return 0;
 }
+
